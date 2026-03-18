@@ -84,3 +84,40 @@ export const login = async (req, res, next) => {
     next(error);
   }
 };
+
+export const socialLogin = async (req, res, next) => {
+  try {
+    const { name, email, authProvider } = req.body;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+ 
+      user = await User.create({
+        name,
+        email,
+        authProvider 
+      });
+    }
+
+   
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "2d" }
+    );
+
+    res.status(STATUS_CODES.SUCCESS).json({
+      success: true,
+      message: "Social Login Successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
